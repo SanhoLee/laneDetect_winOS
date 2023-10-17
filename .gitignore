@@ -2,3 +2,5 @@
 **/x64
 .gitattributes
 laneDetect_winOS.*
+calib/**
+img/*.mp4

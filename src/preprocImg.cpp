@@ -3,7 +3,7 @@
 #include "preprocImg.hpp"
 #include "common.hpp"
 
-char CALBR_FILE[256] = "cameraCalibrationData/out.txt";
+char CALBR_FILE[256] = "calib/out.txt";
 
 Mat preprocImg(Mat img, Mat *invMatx)
 {

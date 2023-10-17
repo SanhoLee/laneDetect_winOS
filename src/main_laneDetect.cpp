@@ -9,6 +9,7 @@
 
 /* 
     only runnable in Release mode.
+    ref for videocapture setting : https://junstar92.tistory.com/401
 */
 
 int main(int argc, char **argv)
@@ -16,35 +17,45 @@ int main(int argc, char **argv)
 
     Mat img, imgBinary, imgShow;
     Mat invMatx;
+    drawDataInfo drawDataSet;    
+    String videoName = "img/project_video.mp4";
 
-    drawDataInfo drawDataSet;
-
-    // img = imread("data/straight_lines1.jpg");
-    //img = imread("data/straight_lines2.jpg");
-    img = imread("img/road.jpg");
-    if (img.empty())
-    {
-        cout << " ERROR :: IMG READ FAILED." << endl;
+    VideoCapture cap(videoName);
+    if (!cap.isOpened()) {
+        cerr << "Video open FAILED... \n";
         return -1;
     }
-    
+
+    // get FPS numbers of the video
+    double fps = cap.get(CAP_PROP_FPS);
+    cout << "Frame counts : " << fps << endl;
+
+    // calculate delay(ms) considering fps number.
+    // v = S/t, t = S/v
+    int delay = cvRound(1000 / fps);
     int rtn = 0;
-    imgBinary = preprocImg(img, &invMatx);
-    drawDataSet = calcImg(imgBinary);
-    imgShow = drawAll(img, imgBinary, invMatx, drawDataSet);
+
+    Mat frame;
 
     while (true) {
-        imshow("IMG SHOW", imgShow);
+        cap >> frame;
+        if (frame.empty())
+            break;
 
-        rtn = waitKey(0);
+        imgBinary = preprocImg(frame, &invMatx);
+        drawDataSet = calcImg(imgBinary);
+        imgShow = drawAll(frame, imgBinary, invMatx, drawDataSet);
+
+
+        imshow("MOVIE FRAME", imgShow);
+        rtn = waitKey(delay);
         if (rtn == 27) {
-            imgShow.release();
-            return 0;
+            break;
+            frame.release();
+            cap.release();
         }
     }
-    // Mat outImg = drawLane(img);
-    // drawOnWarpImg(imgBinary);
-    // drawPolygonAndFill(imgBinary);
 
-    //return 0;
+    destroyAllWindows();
+    return 0;
 }
