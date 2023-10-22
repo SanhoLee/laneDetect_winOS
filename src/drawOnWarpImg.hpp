@@ -13,7 +13,7 @@ void drawPolygonAndFill(Mat imgBinary);
 void polyfit_using_prev_fitCoeffs(
     Mat imgBinary,
     vector<vector<double>> coeffsLR,
-    vector<vector<Point>> *pixelPosXYNext,
+    vector<vector<Point>> pixelPosXYNext,
     vector<vector<double>> *coeffsLRNext);
 
 Mat make3ChImg(Mat imgBinary);

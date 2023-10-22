@@ -4,8 +4,10 @@
 #include "common.hpp"
 
 char CALBR_FILE[256] = "calib/out.txt";
+bool ACTIVE = true;
+bool NOT_ACTIVE = false;
 
-Mat preprocImg(Mat img, Mat *invMatx)
+Mat preprocImg(Mat img, Mat *Matx, Mat *invMatx)
 {
     Mat imgUndistort, imgUnwarp;
     Mat imgHLS_L;
@@ -13,10 +15,10 @@ Mat preprocImg(Mat img, Mat *invMatx)
     Mat combineOut;
 
     /* undistort img. */
-    imgUndistort = undistortingImg(img, true);
+    imgUndistort = undistortingImg(img, ACTIVE);
 
     /* perspective transform(3d -> 2d(bird's view)) */
-    imgUnwarp = unWarpingImg(imgUndistort, &invMatx, false);
+    imgUnwarp = unWarpingImg(imgUndistort, &Matx, &invMatx, NOT_ACTIVE);
 
     /* normalize img pixel for each color channel */
     imgHLS_L = normalize_HLS_L(imgUnwarp);
@@ -24,9 +26,33 @@ Mat preprocImg(Mat img, Mat *invMatx)
 
     /* combine hls and lab color pixel when either img pixel has 1 value or not. */
     combineOut = combine_both_img(imgHLS_L, imgLAB_B);
+    
+    //imshow("combined OUT", combineOut * 255);
+    //imshow("imgUnwarp", imgUnwarp);
+    //imshow("imgLAB_B", imgLAB_B * 255); // orange line on left
+    //imshow("imgHLS_L", imgHLS_L * 255); // white line on right
+    
+    
+    
+    /*Todo,
+        
+        1. cropping unnecessary area from side edge of 20% space ? in order to reduce noise.
+        2. select minimum target pixels for calculating multi-equation.?
+    
+    
+    */
+    
 
-    // imshow("combined OUT", combineOut * 255);
-    // imshow("imgUnwarp", imgUnwarp);
+
+
+
+    // showing img after several works above.
+
+
+
+
+
+    waitKey(25);
 
     return combineOut;
 };
@@ -363,10 +389,15 @@ Mat undistortingImg(Mat img, bool activateThis)
     return imgUndistorted;
 };
 
-Mat unWarpingImg(Mat imgUndistort, Mat **invMatx, bool showWarpZone)
+Mat unWarpingImg(Mat imgUndistort, Mat **Matx, Mat **invMatx, bool showWarpZone)
 {
-    Mat Matx;
+    // 1. Get matrix both warp and unwarp direction.
+    // 2. Return Warped img data.(bird-view img)
+
+
     Mat imgWarp;
+    Mat imgWarpToOrigin;
+
     int width, height;
     vector<Point2f> srcRectCoord;
     vector<Point2f> dstRectCoord;
@@ -396,13 +427,13 @@ Mat unWarpingImg(Mat imgUndistort, Mat **invMatx, bool showWarpZone)
     dstRectCoord = {p1d, p2d, p3d, p4d};
 
     /* 1. calculating matrix between a img and bird view img. */
-    Matx = getPerspectiveTransform(srcRectCoord, dstRectCoord);
+    **Matx = getPerspectiveTransform(srcRectCoord, dstRectCoord);
 
     /* 2. calculating inverse matrix between a img and bird view img. */
     **invMatx = getPerspectiveTransform(dstRectCoord, srcRectCoord);
 
     /* 3. get perspective warping img */
-    warpPerspective(imgUndistort, imgWarp, Matx, Size(width, height), INTER_LINEAR);
+    warpPerspective(imgUndistort, imgWarp, **Matx, Size(width, height), INTER_LINEAR);
 
     if (showWarpZone)
     {
@@ -416,7 +447,7 @@ Mat unWarpingImg(Mat imgUndistort, Mat **invMatx, bool showWarpZone)
         line(imgUndistort, srcRectCoord[2], srcRectCoord[3], Scalar(0, 255, 0), 3, LINE_AA);
         imshow("undistorted", imgUndistort);
         imshow("imgWarp", imgWarp);
-        waitKey(0);
+        waitKey(25);
     }
 
     return imgWarp;

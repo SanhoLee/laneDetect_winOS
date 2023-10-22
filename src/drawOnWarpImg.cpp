@@ -11,6 +11,7 @@ Mat drawAll(Mat original, Mat binary, Mat invMatx, drawDataInfo drawDataSet)
     // for drawing lane area with polygon, push each lane pixel back on one vector variable.
     vector<Point> lanePolyPts;
     int margin = 10;
+    int rtn = 0;
 
     for (int i = binary.rows; i >= 0; i--)
     {
@@ -28,9 +29,21 @@ Mat drawAll(Mat original, Mat binary, Mat invMatx, drawDataInfo drawDataSet)
     polylines(windowImg, drawDataSet.leftLanePts, false, Scalar(255, 0, 255), 15, LINE_AA);
     polylines(windowImg, drawDataSet.rightLanePts, false, Scalar(0, 255, 255), 15, LINE_AA);
 
+    
+
     // unWarping Img
     Mat unWarpedImg;
     warpPerspective(windowImg, unWarpedImg, invMatx, Size(original.cols, original.rows), INTER_LINEAR);
+
+    //imshow("windowImg", windowImg);
+    //imshow("unWarpedImg", unWarpedImg);
+
+
+    //rtn = waitKey(25);
+    //if (rtn == 27) {
+    //    destroyAllWindows();
+    //}
+
 
     // put Text on calculated Lane data : radius, offset distance.
     string radius = format("%.2f", ((drawDataSet.leftRadius + drawDataSet.rightRadius) / 2));
@@ -149,7 +162,8 @@ void drawPolygonAndFill(Mat imgBinary)
     Mat dstImg = make3ChImg(imgBinary);
 
     calcLaneImg(imgBinary, &rectWindowInfo, &pixelPosXY, &coeffsLR);
-    polyfit_using_prev_fitCoeffs(imgBinary, coeffsLR, &pixelPosXYNext, &coeffsLRNext);
+    //polyfit_using_prev_fitCoeffs(imgBinary, coeffsLR, &pixelPosXYNext, &coeffsLRNext);
+    polyfit_using_prev_fitCoeffs(imgBinary, coeffsLR, pixelPosXYNext, &coeffsLRNext);
 
     // with new coeffs, calculate each lane center position.
     vector<Point> leftLanePts;
@@ -190,7 +204,7 @@ void drawPolygonAndFill(Mat imgBinary)
 void polyfit_using_prev_fitCoeffs(
     Mat imgBinary,
     vector<vector<double>> coeffsLR,
-    vector<vector<Point>> *pixelPosXYNext,
+    vector<vector<Point>> pixelPosXYNext,
     vector<vector<double>> *coeffsLRNext)
 {
     Mat nonZeros;
@@ -201,15 +215,15 @@ void polyfit_using_prev_fitCoeffs(
         pixelPosXYNext[0] : left
         pixelPosXYNext[1] : right
     */
-    *pixelPosXYNext = getIndexArrayWithPolyCoeffs(nonZeros, coeffsLR);
+    pixelPosXYNext = getIndexArrayWithPolyCoeffs(nonZeros, coeffsLR);
 
-    vector<double> inCoordLeft;
-    vector<double> outCoordLeft;
-    vector<double> inCoordRight;
-    vector<double> outCoordRight;
+    vector<int> inCoordLeft;
+    vector<int> outCoordLeft;
+    vector<int> inCoordRight;
+    vector<int> outCoordRight;
 
-    makeOneDirectionArray(*pixelPosXYNext, LEFT_LANE, &inCoordLeft, &outCoordLeft);
-    makeOneDirectionArray(*pixelPosXYNext, RIGHT_LANE, &inCoordRight, &outCoordRight);
+    makeOneDirectionArray(pixelPosXYNext[0], &inCoordLeft, &outCoordLeft);
+    makeOneDirectionArray(pixelPosXYNext[1], &inCoordRight, &outCoordRight);
 
     // calculating polyfit coefficients.
     vector<double> polyCoeffsLeft_new;
@@ -257,11 +271,11 @@ Mat drawLane(Mat original)
     vector<vector<double>> coeffsLR;
     vector<vector<Rect>> rectWindowInfo;
     vector<vector<Point>> pixelPosXY;
-    Mat mInv;
+    Mat m, mInv;
 
     double leftRadius, rightRadius, centerOffset;
 
-    Mat imgBinary = preprocImg(original, &mInv);
+    Mat imgBinary = preprocImg(original, &m,&mInv);
     calcLaneImg(imgBinary, &rectWindowInfo, &pixelPosXY, &coeffsLR);
     calcLaneRadiusAndCenter(imgBinary, pixelPosXY, &leftRadius, &rightRadius, &centerOffset);
     double radiusVal = (leftRadius + rightRadius) / 2;

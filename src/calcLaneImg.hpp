@@ -38,23 +38,22 @@ void winSearchImg(Mat preprocess,
 // void makeZero_UnderDiagonalElement(double xArr[3][3], double yArr[3][1]);
 void makeZero_UnderDiagonalElement(double xArr[][3], double yArr[][1]);
 
-vector<double> polyFit_cpp(vector<double> xCoord, vector<double> yCoord, int polyOrder);
+vector<double> polyFit_cpp(vector<int> xCoord, vector<int> yCoord, int polyOrder);
 
-double sumVecPow(vector<double> dataVec, int powOrder);
-double sumVecPowXY(vector<double> dataVecX, int powOrderX, vector<double> dataVecY, int powOrderY);
+double sumVecPow(vector<int> dataVec, int powOrder);
+double sumVecPowXY(vector<int> dataVecX, int powOrderX, vector<int> dataVecY, int powOrderY);
 void initGaussianMatrix(
     int polyOrder,
-    vector<double> *xCoord,
-    vector<double> *yCoord,
+    vector<int> *xCoord,
+    vector<int> *yCoord,
     double xArr[][3],
     double yArr[][1]);
 void calcCoeffsValue(double xArr[][3], double yArr[][1], double aArr[][1]);
 int calcPoly(double xIn, vector<double> polyCoeffs);
 void makeOneDirectionArray(
-    vector<vector<Point>> pointContainer,
-    int i_side,
-    vector<double> *inCoord,
-    vector<double> *outCoord);
+    vector<Point> pointContainer,
+    vector<int> *inCoord,
+    vector<int> *outCoord);
 
 void calcLaneRadiusAndCenter(
     Mat img,

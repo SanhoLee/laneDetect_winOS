@@ -16,9 +16,10 @@ int main(int argc, char **argv)
 {
 
     Mat img, imgBinary, imgShow;
-    Mat invMatx;
+    Mat Matx, invMatx;
     drawDataInfo drawDataSet;    
     String videoName = "img/project_video.mp4";
+    //String videoName = "img/challenge_video.mp4";
 
     VideoCapture cap(videoName);
     if (!cap.isOpened()) {
@@ -27,14 +28,14 @@ int main(int argc, char **argv)
     }
 
     // get FPS numbers of the video
-    double fps = cap.get(CAP_PROP_FPS);
-    cout << "Frame counts : " << fps << endl;
-
     // calculate delay(ms) considering fps number.
-    // v = S/t, t = S/v
+    double fps = cap.get(CAP_PROP_FPS);
     int delay = cvRound(1000 / fps);
-    int rtn = 0;
 
+    cout << "Frame counts : " << fps << endl;
+    cout << "delay time : " << delay << endl;
+
+    int rtn = 0;
     Mat frame;
 
     while (true) {
@@ -42,7 +43,7 @@ int main(int argc, char **argv)
         if (frame.empty())
             break;
 
-        imgBinary = preprocImg(frame, &invMatx);
+        imgBinary = preprocImg(frame, &Matx, &invMatx);
         drawDataSet = calcImg(imgBinary);
         imgShow = drawAll(frame, imgBinary, invMatx, drawDataSet);
 
